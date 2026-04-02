@@ -1,0 +1,19 @@
+# Maven
+target/
+.mvn/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Java
+*.class
+*.jar
+*.log
+
+# Build
+mvnc.log

@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MaVille — Montréal</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<!-- ==================== AUTH MODAL ==================== -->
+<div id="auth-overlay" class="modal-overlay hidden">
+    <div class="modal" style="max-width:440px">
+        <div class="modal-header">
+            <h3 id="auth-modal-title">Connexion</h3>
+            <button id="auth-close" class="icon-btn">✕</button>
+        </div>
+        <div class="modal-body">
+            <div class="tabs">
+                <button class="tab active" data-tab="login">Connexion</button>
+                <button class="tab" data-tab="register">Inscription</button>
+            </div>
+
+            <!-- Login Form -->
+            <form id="login-form" class="auth-form">
+                <div class="field">
+                    <label for="login-email">Courriel</label>
+                    <input type="email" id="login-email" required placeholder="votre@courriel.com">
+                </div>
+                <div class="field">
+                    <label for="login-password">Mot de passe</label>
+                    <input type="password" id="login-password" required placeholder="••••••••">
+                </div>
+                <button type="submit" class="btn primary">Se connecter</button>
+            </form>
+
+            <!-- Register Form -->
+            <form id="register-form" class="auth-form hidden">
+                <div class="field">
+                    <label>Type de compte</label>
+                    <div class="radio-group">
+                        <label><input type="radio" name="reg-role" value="resident" checked> Résident</label>
+                        <label><input type="radio" name="reg-role" value="intervenant"> Intervenant</label>
+                    </div>
+                </div>
+                <div class="field">
+                    <label for="reg-nom">Nom</label>
+                    <input type="text" id="reg-nom" required>
+                </div>
+                <div class="field">
+                    <label for="reg-email">Courriel</label>
+                    <input type="email" id="reg-email" required>
+                </div>
+                <div class="field">
+                    <label for="reg-password">Mot de passe</label>
+                    <input type="password" id="reg-password" required minlength="6">
+                </div>
+                <!-- Resident fields -->
+                <div id="resident-fields">
+                    <div class="field">
+                        <label for="reg-dob">Date de naissance</label>
+                        <input type="date" id="reg-dob">
+                    </div>
+                    <div class="field">
+                        <label for="reg-adresse">Adresse résidentielle</label>
+                        <input type="text" id="reg-adresse" placeholder="123 Rue Exemple, Quartier">
+                    </div>
+                </div>
+                <!-- Intervenant fields -->
+                <div id="intervenant-fields" class="hidden">
+                    <div class="field">
+                        <label for="reg-type">Type d'intervenant</label>
+                        <select id="reg-type">
+                            <option value="PUBLIC">Public</option>
+                            <option value="PRIVE">Privé</option>
+                            <option value="PARTICULIER">Particulier</option>
+                        </select>
+                    </div>
+                    <div class="field">
+                        <label for="reg-ville-id">Identifiant de ville</label>
+                        <input type="number" id="reg-ville-id">
+                    </div>
+                </div>
+                <button type="submit" class="btn primary">S'inscrire</button>
+            </form>
+
+            <div id="auth-error" class="error-msg hidden"></div>
+        </div>
+    </div>
+</div>
+
+<!-- ==================== MAIN APP (always visible) ==================== -->
+<div id="app-screen" class="screen">
+
+    <!-- Top bar -->
+    <header class="topbar">
+        <div class="topbar-left">
+            <button id="home-link" class="home-link">🏙️ MaVille</button>
+        </div>
+        <div class="topbar-right">
+            <!-- Logged-out state -->
+            <div id="guest-actions">
+                <button id="open-login-btn" class="btn small" style="background:rgba(255,255,255,.15);color:#fff">Connexion</button>
+                <button id="open-register-btn" class="btn small primary">Inscription</button>
+            </div>
+            <!-- Logged-in state -->
+            <div id="user-actions" class="hidden">
+                <button id="notif-btn" class="icon-btn" title="Notifications">
+                    🔔 <span id="notif-badge" class="badge hidden">0</span>
+                </button>
+                <span id="user-name"></span>
+                <button id="logout-btn" class="btn small">Déconnexion</button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Sidebar nav -->
+    <div class="layout">
+        <nav class="sidebar">
+            <button class="nav-item" data-view="home">🏠 Accueil</button>
+            <button class="nav-item active" data-view="projets">📋 Projets</button>
+            <button class="nav-item" data-view="requetes">📝 Requêtes</button>
+            <button class="nav-item auth-only resident-only" data-view="horaires">🕐 Horaires</button>
+            <button class="nav-item auth-only intervenant-only" data-view="candidatures">📨 Candidatures</button>
+            <button class="nav-item" data-view="travaux">🚧 Travaux MTL</button>
+            <button class="nav-item" data-view="entraves">🚫 Entraves MTL</button>
+            <button class="nav-item auth-only" data-view="notifications">🔔 Notifications</button>
+        </nav>
+
+        <!-- Content area -->
+        <main class="content">
+
+            <!-- HOME VIEW -->
+            <section id="view-home" class="view hidden">
+                <div class="hero">
+                    <h1>🏙️ Bienvenue sur MaVille</h1>
+                    <p>Consultez les projets de construction, les travaux en cours et les entraves routières à Montréal.</p>
+                    <p>Connectez-vous pour soumettre des requêtes, gérer vos horaires et recevoir des notifications.</p>
+                    <div class="hero-actions">
+                        <button class="btn primary hero-login-btn">Se connecter</button>
+                        <button class="btn secondary" onclick="navigateTo('projets')">Voir les projets</button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- PROJETS VIEW -->
+            <section id="view-projets" class="view">
+                <div class="view-header">
+                    <h3>Projets de construction</h3>
+                    <div class="view-actions">
+                        <input type="text" id="projets-search" placeholder="Filtrer par quartier..." class="search-input">
+                        <select id="projets-statut-filter">
+                            <option value="">Tous les statuts</option>
+                            <option value="PREVU">Prévu</option>
+                            <option value="EN_COURS">En cours</option>
+                            <option value="SUSPENDU">Suspendu</option>
+                            <option value="TERMINE">Terminé</option>
+                        </select>
+                        <button id="add-projet-btn" class="btn primary intervenant-only">+ Nouveau projet</button>
+                    </div>
+                </div>
+                <div id="projets-list" class="card-grid"></div>
+            </section>
+
+            <!-- REQUETES VIEW -->
+            <section id="view-requetes" class="view hidden">
+                <div class="view-header">
+                    <h3>Requêtes de travail</h3>
+                    <div class="view-actions">
+                        <label class="toggle-label">
+                            <input type="checkbox" id="requetes-open-filter" checked> Ouvertes seulement
+                        </label>
+                        <button id="add-requete-btn" class="btn primary resident-only">+ Nouvelle requête</button>
+                    </div>
+                </div>
+                <div id="requetes-list" class="card-grid"></div>
+            </section>
+
+            <!-- HORAIRES VIEW -->
+            <section id="view-horaires" class="view hidden">
+                <div class="view-header">
+                    <h3>Mon horaire de préférences</h3>
+                </div>
+                <div id="horaires-list" class="card-grid"></div>
+            </section>
+
+            <!-- CANDIDATURES VIEW -->
+            <section id="view-candidatures" class="view hidden">
+                <div class="view-header">
+                    <h3>Mes candidatures</h3>
+                </div>
+                <div id="candidatures-list" class="card-grid"></div>
+            </section>
+
+            <!-- TRAVAUX MTL VIEW -->
+            <section id="view-travaux" class="view hidden">
+                <div class="view-header">
+                    <h3>Travaux en cours — Données ouvertes Montréal</h3>
+                    <div class="view-actions">
+                        <input type="text" id="travaux-search" placeholder="Rechercher par quartier..." class="search-input">
+                        <button id="travaux-search-btn" class="btn primary">Rechercher</button>
+                    </div>
+                </div>
+                <div id="travaux-list" class="card-grid"></div>
+            </section>
+
+            <!-- ENTRAVES VIEW -->
+            <section id="view-entraves" class="view hidden">
+                <div class="view-header">
+                    <h3>Entraves routières — Données ouvertes Montréal</h3>
+                    <div class="view-actions">
+                        <input type="text" id="entraves-search" placeholder="Rechercher par rue..." class="search-input">
+                        <button id="entraves-search-btn" class="btn primary">Rechercher</button>
+                    </div>
+                </div>
+                <div id="entraves-list" class="card-grid"></div>
+            </section>
+
+            <!-- NOTIFICATIONS VIEW -->
+            <section id="view-notifications" class="view hidden">
+                <div class="view-header">
+                    <h3>Notifications</h3>
+                </div>
+                <div id="notifications-list" class="card-grid"></div>
+            </section>
+        </main>
+    </div>
+
+    <!-- MODAL -->
+    <div id="modal-overlay" class="modal-overlay hidden">
+        <div class="modal">
+            <div class="modal-header">
+                <h3 id="modal-title"></h3>
+                <button id="modal-close" class="icon-btn">✕</button>
+            </div>
+            <div id="modal-body" class="modal-body"></div>
+        </div>
+    </div>
+</div>
+
+<script src="app.js"></script>
+</body>
+</html>
